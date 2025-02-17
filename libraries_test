@@ -1,0 +1,6 @@
+sudo pip3 install adafruit-circuitpython-pn532
+
+-----------------------------------------------------------
+git clone https://github.com/mxgxw/MFRC522-python.git
+cd MFRC522-python
+sudo python3 setup.py install
