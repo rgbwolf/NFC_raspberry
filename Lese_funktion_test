@@ -1,18 +1,35 @@
 import time
-from Adafruit_PN532 import PN532_I2C
+import board
+import busio
+from adafruit_pn532.uart import PN532_UART
 
-# Create an instance of the PN532 class
-pn532 = PN532_I2C()
+# Create a UART interface
+uart = busio.UART(board.TX, board.RX, baudrate=115200)
+
+# Create PN532 instance
+pn532 = PN532_UART(uart)
 
 # Initialize the PN532
-pn532.begin()
+pn532.SAM_configuration()
+
 print("Waiting for an NFC card...")
 
 while True:
-    # Check if a card is available to read
+    # Check for an NFC card
     uid = pn532.read_passive_target()
     
     if uid is not None:
         print("Found an NFC card!")
         print("UID:", [hex(i) for i in uid])
-        time.sleep(1)
+        
+        # Write data to the NFC tag
+        try:
+            # The data you want to write
+            data_to_write = "Hello, NFC!"
+            print("Writing data to the NFC tag...")
+            pn532.ntag2xx_WriteNDEF(data_to_write.encode('utf-8'))
+            print("Data written successfully!")
+        except Exception as e:
+            print("Error writing to NFC tag:", e)
+        
+        time.sleep(1)  # Wait a bit before looking for another card
