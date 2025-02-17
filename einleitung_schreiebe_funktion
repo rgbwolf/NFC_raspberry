@@ -1,0 +1,63 @@
+Ensure you have the required libraries installed:
+
+pyserial for serial communication.
+The Adafruit PN532 library.
+You can install pyserial using:
+
+bash
+Copy code
+sudo pip3 install pyserial
+If you haven't installed the Adafruit PN532 library yet, you can do so by cloning the repository and installing it:
+
+bash
+Copy code
+git clone https://github.com/adafruit/Adafruit_CircuitPython_PN532.git
+cd Adafruit_CircuitPython_PN532
+sudo python3 setup.py install
+Wiring the PN532 to Raspberry Pi (UART Mode): Make sure your PN532 is connected to the Raspberry Pi as follows:
+
+| PN532 Pin | Raspberry Pi Pin | |-----------|------------------| | VCC | 3.3V | | GND | Ground | | TX | GPIO 15 (RXD) | | RX | GPIO 14 (TXD) |
+
+Create a new Python file (e.g., write_nfc.py):
+
+bash
+Copy code
+nano write_nfc.py
+Copy and paste the following code into the file:
+
+python
+Copy code
+import time
+import serial
+from adafruit_pn532.pn532 import PN532
+
+# Initialize serial connection
+uart = serial.Serial("/dev/serial0", baudrate=115200, timeout=1)
+
+# Create PN532 instance
+pn532 = PN532(uart)
+
+# Initialize the PN532
+pn532.SAM_configuration()
+
+print("Waiting for an NFC card...")
+
+while True:
+    # Check for an NFC card
+    uid = pn532.read_passive_target()
+    
+    if uid is not None:
+        print("Found an NFC card!")
+        print("UID:", [hex(i) for i in uid])
+        
+        # Write data to the NFC tag
+        try:
+            # The data you want to write
+            data_to_write = "Hello, NFC!"
+            print("Writing data to the NFC tag...")
+            pn532.ntag2xx_WriteNDEF(data_to_write.encode('utf-8'))
+            print("Data written successfully!")
+        except Exception as e:
+            print("Error writing to NFC tag:", e)
+        
+        time.sleep(1)  # Wait a bit before looking for another card
