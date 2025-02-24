@@ -1,0 +1,9 @@
+# Für Ubuntu/Raspberry Pi:
+sudo apt update
+sudo apt install python3-dev libgpiod2 spi-tools
+
+# Python-Pakete mit korrekten Namen:
+pip3 install pn532pi ndeflib
+
+# Alternative für GPIO-Zugriff unter Ubuntu:
+sudo apt install python3-libgpiod
