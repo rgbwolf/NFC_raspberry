@@ -10,3 +10,6 @@ sudo apt install python3-libgpiod
 
 #testing
 pip install nfcpy
+
+
+pip install adafruit-circuitpython-board adafruit-circuitpython-pn532
