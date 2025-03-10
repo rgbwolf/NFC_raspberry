@@ -1,33 +1,34 @@
 import nfc
-import nfc.ndef
 
 def on_connect(tag):
     print("Tag gefunden!")
     print("Tag-ID:", tag.identifier.hex())
-
-    # Überprüfe, ob das Tag NDEF unterstützt
-    if tag.ndef is None:
-        print("Das Tag unterstützt kein NDEF-Format oder muss formatiert werden.")
-        return True  # Verbindung beibehalten, aber keine Schreibaktion
-
-    # Falls das Tag nicht schreibgeschützt ist, fortfahren
-    if tag.ndef.is_writeable:
-        new_text = input("Gib den Text ein, den du auf das Tag schreiben möchtest: ")
-        try:
-            new_record = nfc.ndef.TextRecord(new_text)
-            tag.ndef.records = [new_record]
-            print("Text erfolgreich auf das Tag geschrieben!")
-        except Exception as e:
-            print("Fehler beim Schreiben auf das Tag:", e)
+    
+    # Wenn Tag NDEF-kompatibel ist, NDEF auslesen
+    if tag.ndef:
+        # Alle Records durchgehen
+        for record in tag.ndef.records:
+            # Prüfen, ob es sich um einen Text-Record handelt
+            if record.type == "urn:nfc:wkt:T":
+                print("Text:", record.text)
     else:
-        print("Das Tag ist schreibgeschützt und kann nicht beschrieben werden.")
+        print("Keine NDEF-Daten gefunden oder Tag ist nicht NDEF-kompatibel.")
 
-    return True  # Verbindung beibehalten
+    # True zurückgeben, damit bei Bedarf mehrere Tags gelesen werden können
+    return True
 
 def main():
-    clf = nfc.ContactlessFrontend('usb')  # Port anpassen, falls notwendig
+    # ACHTUNG: device_path anpassen, falls der UART anders heißt oder du /dev/ttyAMA0 /dev/serial0 nutzt
+    device_path = 'pn532_uart:/dev/ttyS0'
     try:
-        print("Warte auf NFC-Tag...")
+        # Versuchen, den Reader über pn532_uart zu öffnen
+        clf = nfc.ContactlessFrontend(device_path)
+    except Exception as e:
+        print("Konnte NFC-Leser nicht öffnen:", e)
+        return
+    
+    print(f"Warte auf NFC-Tag über {device_path} ...")
+    try:
         clf.connect(rdwr={'on-connect': on_connect})
     finally:
         clf.close()
