@@ -1,21 +1,22 @@
+# check_tag.py
+
 import nfc
 
 def on_connect(tag):
-    # Prüfen, ob das Tag NDEF-kompatibel ist
+    # Ueberpruefen, ob das Tag NDEF-kompatibel ist
     if tag.ndef is not None:
         print("Tag ist NDEF-kompatibel.")
-        # Prüfen, ob das Tag beschreibbar ist
+        # Ueberpruefen, ob das Tag beschreibbar ist
         if tag.ndef.is_writeable:
             print("Tag ist beschreibbar.")
         else:
-            print("Tag ist schreibgeschützt.")
+            print("Tag ist schreibgeschuetzt.")
     else:
         print("Tag ist nicht NDEF-kompatibel oder nicht formatiert.")
-    # True zurückgeben, damit die Verbindung (rdwr) offen bleibt
     return True
 
 def main():
-    # 'usb' ggf. anpassen, z.B. 'tty:S0' oder 'COM3', je nach System und Reader
+    # Passe 'usb' ggf. an: 'tty:S0', 'COM3' usw. je nach System/Reader
     try:
         clf = nfc.ContactlessFrontend('usb')
         print("Warte auf NFC-Tag...")
