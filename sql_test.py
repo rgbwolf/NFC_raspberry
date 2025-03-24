@@ -18,7 +18,7 @@ def on_connect(tag):
     return True  # Verbindung beibehalten
 
 def check_balance(chip_id):
-    conn = sqlite3.connect('meine_datenbank.db')
+    conn = sqlite3.connect('kasse.db')  # Verbindung zur Datenbank 'kasse'
     cursor = conn.cursor()
     
     cursor.execute("SELECT kontostand FROM Geldbetrag WHERE chip_id = ?", (chip_id,))
@@ -35,7 +35,7 @@ def check_balance(chip_id):
     conn.close()
 
 def increase_balance(chip_id, amount):
-    conn = sqlite3.connect('meine_datenbank.db')
+    conn = sqlite3.connect('kasse.db')  # Verbindung zur Datenbank 'kasse'
     cursor = conn.cursor()
     
     cursor.execute("UPDATE Geldbetrag SET kontostand = kontostand + ? WHERE chip_id = ?", (amount, chip_id))
