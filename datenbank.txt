@@ -1,0 +1,2 @@
+verbinden
+sudo mysql -u root -p
