@@ -2,13 +2,11 @@ import nfc
 import sqlite3
 
 def on_connect(tag):
-    print("Tag gefunden!")
-    print("Tag-ID:", tag.identifier.hex())
-    
     chip_id = tag.identifier.hex()
     
     while True:
-        print("\nWählen Sie eine Option:")
+        print(f"\nTag gefunden! Chip-ID: {chip_id}")
+        print("Wählen Sie eine Option:")
         print("1. Kontostand überprüfen")
         print("2. Betrag einzahlen")
         print("3. Artikel kaufen")
@@ -26,11 +24,12 @@ def on_connect(tag):
             purchase_item(chip_id, amount)
         elif choice == '4':
             print("Programm wird beendet.")
-            break
+            return False  # Beende die Schleife und die Verbindung
         else:
             print("Ungültige Auswahl. Bitte versuchen Sie es erneut.")
-    
-    return True  # Verbindung beibehalten
+        
+        # Nach jeder Auswahl wird die NFC-Abfrage erneut durchgeführt
+        return True  # Behalte die Verbindung, um den NFC-Tag erneut zu lesen
 
 def check_balance(chip_id):
     conn = sqlite3.connect('kasse.db')  # Verbindung zur Datenbank 'kasse'
@@ -42,10 +41,8 @@ def check_balance(chip_id):
     if result:
         balance = result[0]
         print(f"Aktueller Kontostand: {balance}")
-        return balance > 0  # Hier kannst du die Bedingung anpassen
     else:
         print("Chip-ID nicht gefunden.")
-        return False
     
     conn.close()
 
@@ -91,8 +88,11 @@ def purchase_item(chip_id, amount):
 def main():
     clf = nfc.ContactlessFrontend('tty:S0')  # Ersetze 'tty:S0' mit dem richtigen Port
     try:
-        print("Warte auf NFC-Tag...")
-        clf.connect(rdwr={'on-connect': on_connect})
+        while True:
+            print("Warte auf NFC-Tag...")
+            tag = clf.connect(rdwr={'on-connect': on_connect})
+            if not tag:
+                print("Kein Tag gefunden. Versuche es erneut.")
     finally:
         clf.close()
 
