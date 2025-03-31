@@ -1,5 +1,9 @@
 import nfc
 import sqlite3
+from decimal import Decimal, getcontext
+
+# Setze die Genauigkeit für Decimal
+getcontext().prec = 10
 
 def on_connect(tag):
     chip_id = tag.identifier.hex()
@@ -17,14 +21,14 @@ def on_connect(tag):
         if choice == '1':
             check_balance(chip_id)
         elif choice == '2':
-            amount = float(input("Geben Sie den Betrag zum Einzahlen ein: "))
+            amount = Decimal(input("Geben Sie den Betrag zum Einzahlen ein: "))
             deposit_amount(chip_id, amount)
         elif choice == '3':
-            amount = float(input("Geben Sie den Betrag für den Kauf ein: "))
+            amount = Decimal(input("Geben Sie den Betrag für den Kauf ein: "))
             purchase_item(chip_id, amount)
         elif choice == '4':
             print("Programm wird beendet.")
-            return False  # Beende die Schleife und die Verbindung
+            exit()
         else:
             print("Ungültige Auswahl. Bitte versuchen Sie es erneut.")
         
@@ -39,7 +43,7 @@ def check_balance(chip_id):
     result = cursor.fetchone()
     
     if result:
-        balance = result[0]
+        balance = Decimal(result[0])  # Konvertiere den Kontostand in Decimal
         print(f"Aktueller Kontostand: {balance}")
     else:
         print("Chip-ID nicht gefunden.")
@@ -50,7 +54,8 @@ def increase_balance(chip_id, amount):
     conn = sqlite3.connect('kasse.db')  # Verbindung zur Datenbank 'kasse'
     cursor = conn.cursor()
     
-    cursor.execute("UPDATE Geldbetrag SET kontostand = kontostand + ? WHERE chip_id = ?", (amount, chip_id))
+    # Umwandlung des Betrags in float
+    cursor.execute("UPDATE Geldbetrag SET kontostand = kontostand + ? WHERE chip_id = ?", (float(amount), chip_id))
     conn.commit()
     print(f"Kontostand für Chip-ID {chip_id} um {amount} erhöht.")
     
@@ -72,10 +77,10 @@ def purchase_item(chip_id, amount):
     result = cursor.fetchone()
     
     if result:
-        balance = result[0]
+        balance = Decimal(result[0])  # Konvertiere den Kontostand in Decimal
         if balance >= amount:
             # Betrag abziehen
-            cursor.execute("UPDATE Geldbetrag SET kontostand = kontostand - ? WHERE chip_id = ?", (amount, chip_id))
+            cursor.execute("UPDATE Geldbetrag SET kontostand = kontostand - ? WHERE chip_id = ?", (float(amount), chip_id))  # Umwandlung in float
             conn.commit()
             print(f"Kauf erfolgreich! {amount} wurde abgezogen. Neuer Kontostand: {balance - amount}")
         else:
